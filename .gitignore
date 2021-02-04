@@ -1,0 +1,5 @@
+build
+dist
+psdl.egg-info
+docs/build
+downloads
