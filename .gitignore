@@ -3,3 +3,4 @@ dist
 psdl.egg-info
 docs/build
 downloads
+**/__pycache__

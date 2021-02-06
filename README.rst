@@ -2,11 +2,11 @@
 PSDL - A pythonic wrapper for SDL
 =================================
 
-psdl is a package that wraps the excellent SDL2 module in an easy to use python 
+PSDL is a package that wraps the fantastic SDL2 module in an easy to use python 
 interface.
 
-Note that this project is still in its super early stages, theres lots of stuff 
-still left to be wrapped. 
+Note that this project is still in its super early stages, there's lots of stuff 
+that's still left to be wrapped. 
 
 
 Why PSDL?
@@ -24,10 +24,12 @@ it. Let us consider a typical SDL function that looks like
 ``SDL_SomeFunctionForSomething``. PSDL will export it, by stripping the inital
 ``SDL_`` (because python has namespaces, unlike C) and changing the style of the
 function name to something that looks more pythonic. The function will look like
-``psdl.some_function_for_something`` from the PSDL side. Similarly, SDL constants
-are exported by just stripping the initial ``SDL_`` part of it, ``SDL_SOME_CONSTANT``
-becomes ``psdl.SOME_CONSTANT``. While SDL provided enums, PSDL does not export the
-enums directly, it just exports the constants within it.
+``psdl.some_function_for_something`` from the PSDL side. 
+
+Similarly, SDL constants are exported by just stripping the initial ``SDL_`` 
+part of it, ``SDL_SOME_CONSTANT`` becomes ``psdl.SOME_CONSTANT``. While SDL 
+provides enums, PSDL does not export the enums directly, it just exports the 
+constants within it.
 
 Coming to structures, PSDL does different stuff based on the context. Since C is not
 object oriented, you will find this style of coding commonly used in SDL.
@@ -40,9 +42,10 @@ object oriented, you will find this style of coding commonly used in SDL.
     SDL_AnotherMethod(obj, args, moreargs);
     SDL_DestroyObj(obj);
 
-We can take advantage of python OOP, and psdl will export the samething like
+We can take advantage of python OOP, and PSDL will export the same thing like
 
 ::
+
     obj = psdl.SomeObj(args)
     obj.some_method(moreargs)
     obj.another_method(args, moreargs)
@@ -50,6 +53,13 @@ We can take advantage of python OOP, and psdl will export the samething like
 Notice the naming convention adopted here. Also notice that in python, we need
 not explicitly deallocate objects, python being a high-level language, does that
 automatically for us.
+
+Also, in some cases, PSDL does not export structs at all. Take ``SDL_Point`` for
+example. This is merely a structure containing two integers. And there are not 
+many functions associated with this structure in SDL. Therefore, PSDL will not
+export this struct, and instead, use a 2-element tuple for representing points.
+Due to the same reason, ``SDL_version`` is not exported, instead, all versions 
+are represented through tuples.
 
 Installation
 ------------
@@ -61,16 +71,15 @@ Building from source
 --------------------
 Windows
 ~~~~~~~
-The build process is pretty straight forward on windows. You just need to have
-the MSVC C compiler set up correctly. psdl is automatically going to get all its
-dependencies (ie, its gonna download SDL from the official website) and automatically
-build psdl.
+The build process is pretty straight forward on Windows. You just need to have
+the MSVC C compiler set up correctly. PSDL is automatically going to get all its
+dependencies (it will download SDL from the official website) and build psdl.
 
 Mac/Linux
 ~~~~~~~~~
-On Mac/linux too, the build process aint complicated. All you need to have is a C
+On Mac/Linux too, the build process isn't complicated. All you need to have is a C
 compiler (which is usually present on most systems) and SDL installed via your 
-package manager. Then psdl will easily install from source.
+package manager.
 
 Advanced Build Options
 ~~~~~~~~~~~~~~~~~~~~~~
