@@ -33,16 +33,15 @@ static PyObject *psdlExc_SDLError = NULL;
 #ifdef PSDL_SDL_MODULE
 #define _PSDL_INCLUDE_SDL_ERROR
 #else /* ~PSDL_SDL_MODULE */
-#define _PSDL_INCLUDE_SDL_ERROR                                      \
-    do {                                                             \
-        PyObject *_module = PyImport_ImportModule("psdl.sdl");       \
-        if (!_module)                                                \
-            return NULL;                                             \
-        psdlExc_SDLError = PyObject_GetAttrString(_module, "error"); \
-        Py_DECREF(_module);                                          \
-        if (!psdlExc_SDLError)                                       \
-            return NULL;                                             \
-    } while (0);
+#define _PSDL_INCLUDE_SDL_ERROR                                  \
+    PyObject *_module = PyImport_ImportModule("psdl.sdl");       \
+    if (!_module)                                                \
+        return NULL;                                             \
+    psdlExc_SDLError = PyObject_GetAttrString(_module, "error"); \
+    Py_DECREF(_module);                                          \
+    if (!psdlExc_SDLError)                                       \
+        return NULL;
+
 #endif /* ~PSDL_SDL_MODULE */
 #endif /* ~PSDL_NO_SDL_ERROR */
 
@@ -51,7 +50,7 @@ static PyObject *psdlExc_SDLError = NULL;
         Py_DECREF(mod);                                  \
         return NULL;                                     \
     }
-    
+
 #define PSDL_TYPE_READY(t) \
     if (PyType_Ready(t)) { \
         Py_DECREF(mod);    \
@@ -79,23 +78,24 @@ static struct PyModuleDef _module_def = { \
     DOC_PLACEHOLDER,                      \
     -1,                                   \
     _module_methods,                      \
-}
+};
 
-#define PSDL_BEGIN_MODINIT(_mod) \
-_PSDL_MOD_DEF;                   \
-PyMODINIT_FUNC                   \
-PyInit_##_mod(void)              \
-{                                \
-    PyObject *mod;               \
-    _PSDL_INCLUDE_SDL_ERROR      \
-    mod = PyModule_Create(&_module_def); if (!mod) return NULL;
+#define PSDL_BEGIN_MODINIT(modname)      \
+_PSDL_MOD_DEF                            \
+PyMODINIT_FUNC                           \
+PyInit_##modname(void)                   \
+{                                        \
+    PyObject *mod;                       \
+    _PSDL_INCLUDE_SDL_ERROR              \
+    mod = PyModule_Create(&_module_def); \
+    if (!mod) return NULL;
 
 #define PSDL_END_MODINIT return mod; }
 
-#define PSDL_MOD_INIT(mod)                \
-_PSDL_MOD_DEF;                            \
+#define PSDL_MOD_INIT(modname)            \
+_PSDL_MOD_DEF                             \
 PyMODINIT_FUNC                            \
-PyInit_##mod(void)                        \
+PyInit_##modname(void)                    \
 {                                         \
     _PSDL_INCLUDE_SDL_ERROR               \
     return PyModule_Create(&_module_def); \

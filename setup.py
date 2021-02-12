@@ -7,9 +7,12 @@ Distributed under the MIT license.
 import glob
 import os
 import platform
+import shutil
 import sys
 
 import setuptools
+
+WIN = platform.system() == "Windows"
 
 PSDL_MAJOR_VERSION = 0
 PSDL_MINOR_VERSION = 0
@@ -25,11 +28,15 @@ PSDL_VERSION_STRING = "{}.{}.{}{}".format(
     PSDL_RELEASE_TAGS,
 )
 
+STR_MACRO_FORMAT = '\\"{}\\"' if WIN else '"{}"'
+def format_str_macro(val):
+    return STR_MACRO_FORMAT.format(val)
+
 definedmacros = [
     ("PSDL_MAJOR_VERSION", str(PSDL_MAJOR_VERSION)),
     ("PSDL_MINOR_VERSION", str(PSDL_MINOR_VERSION)),
     ("PSDL_PATCH_VERSION", str(PSDL_PATCH_VERSION)),
-    ("PSDL_VERSION_STRING", '"{}"'.format(PSDL_VERSION_STRING)),
+    ("PSDL_VERSION_STRING", format_str_macro(PSDL_VERSION_STRING)),
 ]
 
 with open("README.rst", "r", encoding="utf-8") as f:
@@ -82,12 +89,10 @@ def download_SDL_Windows():
     return os.path.join(SDL_DOWNLOADED_PATH, "include"), os.path.join(
         SDL_DOWNLOADED_PATH, "lib", arch)
 
-DEFAULT_LIB_DIR = False if platform.system() == "Windows" else "/usr/lib"
-
 includedir = os.environ.get("PSDL_INCLUDE_DIR", False)
-libdir = os.environ.get("PSDL_LIB_DIR", DEFAULT_LIB_DIR)
+libdir = os.environ.get("PSDL_LIB_DIR", False if WIN else "/usr/lib")
 
-if platform.system() == "Windows":
+if WIN:
     if includedir ^ libdir:
         print("========================================")
         print("Either include dir or lib dir is not set")
@@ -97,6 +102,8 @@ if platform.system() == "Windows":
 
     if not includedir:
         includedir, libdir = download_SDL_Windows()
+        shutil.copyfile(os.path.join(libdir, "SDL2.dll"),
+                        os.path.join("psdl", "SDL2.dll"))
 
 elif not includedir:
     lookupincludedirs = [
@@ -110,37 +117,37 @@ elif not includedir:
         raise RuntimeError("SDL2 include directory not found")
 
 def name_from_cfile(cfile):
-    return cfile.rstrip(".c").replace('/', '.')
+    return cfile.rstrip(".c").replace('\\' if WIN else '/', '.')
 
 extensions = []
 
 # if we have any files we don't want to compile, we put it in this list.
 # right now, this list includes a lot of names! The goal is to eventually get it
 # down to an empty list
-exclude_files = [
-    'psdl/sensor.c',
-    'psdl/vulkan.c',
-    'psdl/joystick.c',
-    'psdl/keyboard.c',
-    'psdl/rect.c',
-    'psdl/timer.c',
-    'psdl/mouse.c',
-    'psdl/system.c',
-    'psdl/pixels.c',
-    'psdl/haptic.c',
-    'psdl/rwops.c',
-    'psdl/hints.c',
-    'psdl/audio.c',
-    'psdl/endian.c',
-    'psdl/gamecontroller.c',
-    'psdl/surface.c',
-    'psdl/syswm.c',
-    'psdl/render.c'
+EXCLUDE_FILES = [
+    'sensor.c',
+    'vulkan.c',
+    'joystick.c',
+    'keyboard.c',
+    'rect.c',
+    'timer.c',
+    'mouse.c',
+    'system.c',
+    'pixels.c',
+    'haptic.c',
+    'rwops.c',
+    'hints.c',
+    'audio.c',
+    'endian.c',
+    'gamecontroller.c',
+    'surface.c',
+    'syswm.c',
+    'render.c'
 ]
 
 for cfile in glob.iglob("psdl/*.c"):
-    if cfile not in exclude_files:
-        modnamemacro = ("PSDL_MOD_NAME", '"{}"'.format(name_from_cfile(cfile)))
+    if cfile not in map(lambda x: os.path.join("psdl", x), EXCLUDE_FILES):
+        modnamemacro = ("PSDL_MOD_NAME", format_str_macro(name_from_cfile(cfile)))
         ext = setuptools.Extension(
             name=name_from_cfile(cfile),
             sources=[cfile],
